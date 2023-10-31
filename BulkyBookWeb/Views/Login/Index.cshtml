@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+<div id="loginpage">
+    <div id="login-container">
+        <div class="text-center">
+            <h1 class="display-4">Login</h1>
+        </div>
+
+        <form id="login-form" method="post" action="/Account/Login" style="margin-left: 460px;margin-right: 400px;">
+            <div class="form-group">
+                <label for="username">Username (Email)</label>
+                <input type="text" class="form-control" id="username" name="username" required="">
+                <span id="email-validation-message" style="color: red;"></span>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required="">
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary" id="login-button" disabled="">Login</button>
+        </form>
+    </div>
+</div>
+<script>
+    const usernameInput = document.getElementById("username");
+    const emailValidationMessage = document.getElementById("email-validation-message");
+    const loginButton = document.getElementById("login-button");
+    const loginForm = document.getElementById("login-form");
+    const homeLink = document.getElementById("Home");
+    const categoryLink = document.getElementById("Category");
+
+    // Function to validate email format using regular expression
+    function validateEmail(email) {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
+        return emailRegex.test(email);
+    }
+
+    // Function to enable or disable the login button based on email validity
+    function updateLoginButtonState() {
+        const email = usernameInput.value;
+        if (validateEmail(email)) {
+            emailValidationMessage.textContent = ""; // Clear any previous error message
+            loginButton.disabled = false; // Enable the button
+        } else {
+            emailValidationMessage.textContent = "Please enter a valid email address";
+            loginButton.disabled = true; // Disable the button
+        }
+    }
+
+    // Attach an event listener to the username input to check validity
+    usernameInput.addEventListener("input", updateLoginButtonState);
+
+    // Attach an event listener to the login form to handle form submission
+    loginForm.addEventListener("submit", function (e) {
+        debugger;
+        e.preventDefault(); // Prevent the default form submission
+        const email = usernameInput.value;
+        if (validateEmail(email)) {
+            $("#loginpage").hide();
+            //homeLink.style.cursor = "auto"; // Allow cursor input on Home link
+            //categoryLink.style.cursor = "auto"; // Allow cursor input on Category link
+            // Navigate to the "Home" page
+            window.location.href = "/Home/Index";
+            //$("#navbar-header").show();
+
+        }
+    });
+</script>
