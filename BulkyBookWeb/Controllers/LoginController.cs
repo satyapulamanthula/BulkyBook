@@ -1,83 +1,78 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BulkyBookWeb.Data;
+using BulkyBookWeb.IRepositories;
+using BulkyBookWeb.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Security.Claims;
 
 namespace BulkyBookWeb.Controllers
 {
     public class LoginController : Controller
     {
-        // GET: LoginController
-        public ActionResult Index()
+        private readonly IUserRepository _userRepository;
+
+        public LoginController(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
+
+        [HttpGet]
+        public IActionResult Index()
         {
             return View();
         }
 
-        // GET: LoginController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: LoginController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: LoginController/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<IActionResult> Index(User user)
         {
-            try
+            var objUserList = _userRepository.GetAllusers(user);
+            if (objUserList != null)
             {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+                // User found, sign in and navigate to home
+                var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                identity.AddClaim(new Claim(ClaimTypes.Name, user.Email));
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-        // GET: LoginController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
+                TempData["success"] = "Login successfully";
+                return RedirectToAction("Index", "Home");
+            }
 
-        // POST: LoginController/Edit/5
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Clear TempData
+            TempData.Clear();
+
+            // User not found, display a message to register
+            ViewData["ErrorMessage"] = "User not found. Please register.";
+            return View(objUserList);
+         }
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Logout()
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Clear TempData
+            TempData.Clear();
+
+            return RedirectToAction("Index", "Login");
         }
 
-        // GET: LoginController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: LoginController/Delete/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public IActionResult Register(User user)
         {
-            try
+            if (ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
+                _userRepository.AddUser(user);
+                // User found, Navigate to login page.
+                TempData["success"] = "Registered successfully";
+                return RedirectToAction("Index", "Login"); // Redirect to home page or login page
             }
-            catch
-            {
-                return View();
-            }
+            return View("Index");
         }
+
     }
 }

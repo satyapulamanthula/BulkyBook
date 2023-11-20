@@ -1,70 +1,196 @@
 ﻿@{
     ViewData["Title"] = "Login";
 }
-<div id="loginpage">
-    <div id="login-container">
-        <div class="text-center">
-            <h1 class="display-4">Login</h1>
-        </div>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+     <!-- Add custom CSS for loader -->
+    <style>
+    #loader {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.7);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
 
-        <form id="login-form" method="post" action="/Account/Login" style="margin-left: 460px;margin-right: 400px;">
-            <div class="form-group">
-                <label for="username">Username (Email)</label>
-                <input type="text" class="form-control" id="username" name="username" required="">
-                <span id="email-validation-message" style="color: red;"></span>
-            </div>
-            <br>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required="">
-            </div>
-            <br>
-            <button type="submit" class="btn btn-primary" id="login-button" disabled="">Login</button>
-        </form>
+    .loader-spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    .keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+</head>
+<body>
+    <div id="loader">
+        <div class="loader-spinner"></div>
     </div>
-</div>
-<script>
-    const usernameInput = document.getElementById("username");
-    const emailValidationMessage = document.getElementById("email-validation-message");
-    const loginButton = document.getElementById("login-button");
-    const loginForm = document.getElementById("login-form");
-    const homeLink = document.getElementById("Home");
-    const categoryLink = document.getElementById("Category");
-
-    // Function to validate email format using regular expression
-    function validateEmail(email) {
-        const emailRegex = /^[A-Za-z0-9._%+-]+@@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/;
-        return emailRegex.test(email);
-    }
-
-    // Function to enable or disable the login button based on email validity
-    function updateLoginButtonState() {
-        const email = usernameInput.value;
-        if (validateEmail(email)) {
-            emailValidationMessage.textContent = ""; // Clear any previous error message
-            loginButton.disabled = false; // Enable the button
-        } else {
-            emailValidationMessage.textContent = "Please enter a valid email address";
-            loginButton.disabled = true; // Disable the button
+    <div class="container mt-4">
+        @if (TempData["success"] != null)
+        {
+            <div id="successAlert" class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["success"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <script>
+                // Close success message after 5 seconds (5000 milliseconds)
+                setTimeout(function () {
+                    $('#successAlert').alert('close');
+                }, 5000);
+            </script>
         }
-    }
 
-    // Attach an event listener to the username input to check validity
-    usernameInput.addEventListener("input", updateLoginButtonState);
-
-    // Attach an event listener to the login form to handle form submission
-    loginForm.addEventListener("submit", function (e) {
-        debugger;
-        e.preventDefault(); // Prevent the default form submission
-        const email = usernameInput.value;
-        if (validateEmail(email)) {
-            $("#loginpage").hide();
-            //homeLink.style.cursor = "auto"; // Allow cursor input on Home link
-            //categoryLink.style.cursor = "auto"; // Allow cursor input on Category link
-            // Navigate to the "Home" page
-            window.location.href = "/Home/Index";
-            //$("#navbar-header").show();
-
+        <!-- Display error message -->
+        @if (ViewData["ErrorMessage"] != null)
+        {
+            <div id="errorAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+                @ViewData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <script>
+                // Close error message after 5 seconds (5000 milliseconds)
+                setTimeout(function () {
+                    $('#errorAlert').alert('close');
+                }, 5000);
+            </script>
         }
-    });
-</script>
+        <div class="text-center" style="max-width: 750px; padding-left: 378px;">
+            <!-- Pills navs -->
+            <ul class="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" id="tab-login" data-toggle="pill" href="#pills-login" role="tab"
+                       aria-controls="pills-login" aria-selected="true">Login</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="tab-register" data-toggle="pill" href="#pills-register" role="tab"
+                       aria-controls="pills-register" aria-selected="false">Register</a>
+                </li>
+            </ul>
+            <!-- Pills navs -->
+            <!-- Pills content -->
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
+                    <form method="post" asp-action="Index">
+                        <!-- Email input -->
+                        <div class="form-outline mb-4">
+                            <input type="email" id="loginName" name="Email" class="form-control" />
+                            <label class="form-label" for="loginName">Email or username</label>
+                        </div>
+
+                        <!-- Password input -->
+                        <div class="form-outline mb-4">
+                            <input type="password" id="loginPassword" name="Password" class="form-control" />
+                            <label class="form-label" for="loginPassword">Password</label>
+                        </div>
+
+                        <!-- 2 column grid layout -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 d-flex justify-content-center">
+                                <!-- Checkbox -->
+                                <div class="form-check mb-3 mb-md-0">
+                                    <input class="form-check-input" type="checkbox" value="" id="loginCheck" name="RememberMe" checked />
+                                    <label class="form-check-label" for="loginCheck"> Remember me </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-flex justify-content-center">
+                                <!-- Simple link -->
+                                <a href="#!">Forgot password?</a>
+                            </div>
+                        </div>
+
+                        @*<!-- Submit button -->
+                        <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>*@
+                        <form method="post" asp-action="Index" onsubmit="showLoader()">
+                            <!-- ... Your form inputs ... -->
+                            <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
+                        </form>
+
+                        <!-- Register buttons -->
+                        <div class="text-center">
+                            <p>Not a member? <a href="#pills-register" onclick="showRegisterTab()">Register</a></p>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="tab-pane fade" id="pills-register" role="tabpanel" aria-labelledby="tab-register">
+                    <form method="post" asp-action="Register">
+                        <!-- Name input -->
+                        <div class="form-outline mb-4">
+                            <label class="form-label" for="Name">Name</label>
+                            <input type="text" id="registerName" name="Name" class="form-control" />
+                        </div>
+                          
+                        <!-- Username input -->
+                        <div class="form-outline mb-4">
+                            <label class="form-label" for="Username">Username</label>
+                            <input type="text" id="registerUsername" name="Username" class="form-control" />
+                        </div>
+
+                        <!-- Email input -->
+                        <div class="form-outline mb-4">
+                            <label class="form-label" for="Email">Email</label>
+                            <input type="email" id="registerEmail" name="Email" class="form-control" />
+                        </div>
+
+                        <!-- Password input -->
+                        <div class="form-outline mb-4">
+                            <label class="form-label" for="Password">Password</label>
+                            <input type="password" id="registerPassword" name="Password" class="form-control" />
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary btn-block mb-3">Register</button>
+                    </form>
+                </div>
+            </div>
+            <!-- Pills content -->
+        </div>
+    </div>
+    <!-- Bootstrap JavaScript and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        function showLoader() {
+            debugger; 
+            $('#loader').show();
+            setTimeout(function () {
+                $('#loader').hide();
+            }, 5000); // Adjust the delay as needed
+        }
+
+        function showRegisterTab() {
+            $('#tab-register').tab('show');
+        }
+
+        // Hide the loader when the new page loads
+        $(document).ready(function () {
+            $('#loader').hide();
+        });
+    </script>
+
+</body>
+</html>
